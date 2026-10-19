@@ -1,0 +1,35 @@
+Assignment 8: Memory Management in xv6
+
+Q1. Virtual-to-Physical Address Translation
+
+The `va2pa()` system call was implemented to translate virtual addresses into physical addresses using the process page table. The page-table indices, offset and permission flags were checked. Global, local and heap variables were tested, along with invalid addresses and address translation after `fork()`. Invalid or inaccessible addresses were handled by checking page-table entries and user permissions before returning the physical address.
+
+Q2. Physical Memory Statistics
+
+A free-page counter was maintained in `kalloc.c` and updated during `kalloc()` and `kfree()` while holding the memory allocator lock. The `getmeminfo()` system call reports total physical pages, free pages, process pages and page-table pages. Testing allocation, `fork()`, child exit and deallocation verified that memory was reclaimed correctly.
+
+Memory usage (free physical pages):
+
+Initial state: 32,531 pages
+
+After parent allocates 10 pages: 32,521 pages
+
+While child process exists: 32,500 pages
+
+After child exits and is reaped: 32,521 pages
+
+After releasing 10 pages: 32,531 pages
+
+The results show that memory is reclaimed after process exit and deallocation, with no observed memory leak in the test.
+
+Q3. Page-Table Dump
+
+The `vmprint()` function was implemented to traverse and display the page-table hierarchy, including entry indices, physical addresses and permission flags. Indentation was used to distinguish page-table levels. The output helped identify code, stack and heap mappings and understand the page-table structure.
+
+Q4. Lazy Memory Allocation
+
+The `sys_sbrk()` function was modified so that heap growth reserves virtual memory without immediately allocating physical pages. The existing `vmfault()` function allocates and zeroes a physical page when it is first accessed. The `uvmcopy()` and `uvmunmap()` functions skip unmapped pages to support `fork()` and cleanup.
+
+Initially, compilation failed because `argint()` returns `void` in this xv6-RISC-V version. Removing the invalid return-value check resolved the error. Tests verified a 32 MB reservation, sparse page accesses, `fork()`, a `read()` into an untouched page and heap shrinking.
+
+Memory usage before and after lazy allocation was not recorded, so the physical-memory savings were not quantitatively measured.
